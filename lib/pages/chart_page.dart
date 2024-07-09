@@ -1,11 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'bitcoin_data_fetcher.dart';
-import 'top_toolbar.dart';
-import 'left_toolbar.dart';
-import 'right_axis_bar.dart';
-import 'bottom_axis_bar.dart';
-import 'chart_area.dart';
+import '../data/bitcoin_data_fetcher.dart';
+import '../widgets/top_toolbar.dart';
+import '../widgets/left_toolbar.dart';
+import '../widgets/right_axis_bar.dart';
+import '../widgets/bottom_axis_bar.dart';
+import '../widgets/chart_area.dart';
 
 class ChartPage extends StatefulWidget {
   @override
@@ -70,8 +70,11 @@ class _ChartPageState extends State<ChartPage> {
   void _onScaleUpdate(ScaleUpdateDetails details) {
     setState(() {
       _scaleX *= details.scale;
+      _scaleY *= details.scale;
       if (_scaleX < 0.5) _scaleX = 0.5; // Limit the minimum scaleX
       if (_scaleX > 3.0) _scaleX = 3.0; // Limit the maximum scaleX
+      if (_scaleY < 0.5) _scaleY = 0.5; // Limit the minimum scaleY
+      if (_scaleY > 3.0) _scaleY = 3.0; // Limit the maximum scaleY
 
       _offsetX = _startOffsetX + (details.focalPoint.dx - _startDragX);
       _offsetY = _startOffsetY + (details.focalPoint.dy - _startDragY);
@@ -82,6 +85,19 @@ class _ChartPageState extends State<ChartPage> {
     if (pointerSignal is PointerScrollEvent) {
       setState(() {
         _scaleY += pointerSignal.scrollDelta.dy * -0.01;
+        if (_scaleY < 0.5) _scaleY = 0.5;
+        if (_scaleY > 3.0) _scaleY = 3.0;
+      });
+    }
+  }
+
+  void _onChartPointerSignal(PointerSignalEvent pointerSignal) {
+    if (pointerSignal is PointerScrollEvent) {
+      setState(() {
+        _scaleX += pointerSignal.scrollDelta.dy * -0.01;
+        _scaleY += pointerSignal.scrollDelta.dy * -0.01;
+        if (_scaleX < 0.5) _scaleX = 0.5;
+        if (_scaleX > 3.0) _scaleX = 3.0;
         if (_scaleY < 0.5) _scaleY = 0.5;
         if (_scaleY > 3.0) _scaleY = 3.0;
       });
@@ -118,6 +134,7 @@ class _ChartPageState extends State<ChartPage> {
                         offsetY: _offsetY,
                         onScaleStart: _onScaleStart,
                         onScaleUpdate: _onScaleUpdate,
+                        onPointerSignal: _onChartPointerSignal, // اضافه کردن مدیریت رویداد سیگنال موس
                       ),
                       // Floating Currency Info Bar
                       if (!_isLoading && _errorMessage.isEmpty)

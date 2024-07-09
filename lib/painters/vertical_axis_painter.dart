@@ -15,8 +15,8 @@ class VerticalAxisPainter extends CustomPainter {
     final double maxY = prices.reduce((a, b) => a > b ? a : b);
     final double range = maxY - minY;
     final double scaledRange = range * scale;
-    final double scaledMinY = minY - scaledRange * 0.1;
-    final double scaledMaxY = maxY + scaledRange * 0.1;
+    final double scaledMinY = minY - scaledRange * 0.1 + offsetY / size.height * scaledRange;
+    final double scaledMaxY = maxY + scaledRange * 0.1 + offsetY / size.height * scaledRange;
     final double step = (scaledMaxY - scaledMinY) / 10;
 
     final textPainter = TextPainter(
@@ -25,7 +25,7 @@ class VerticalAxisPainter extends CustomPainter {
     );
 
     for (double i = scaledMinY; i <= scaledMaxY; i += step) {
-      double y = size.height - (i - scaledMinY) * size.height / (scaledMaxY - scaledMinY) + offsetY;
+      double y = size.height - (i - scaledMinY) * size.height / (scaledMaxY - scaledMinY);
       textPainter.text = TextSpan(
         text: i.toStringAsFixed(2),
         style: TextStyle(color: Colors.black, fontSize: 10),

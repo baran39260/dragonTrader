@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'chart_page.dart'; // وارد کردن فایل chart_page.dart
+import 'pages/chart_page.dart'; // وارد کردن فایل chart_page.dart
 
 void main() {
   runApp(MyApp());

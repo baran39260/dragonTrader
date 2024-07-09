@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'horizontal_axis_painter.dart';
+import '../painters/horizontal_axis_painter.dart';
 
 class BottomAxisBar extends StatelessWidget {
   final List<double> prices;

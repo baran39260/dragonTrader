@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'vertical_axis_painter.dart';
+import '../painters/vertical_axis_painter.dart';
 
 class RightAxisBar extends StatelessWidget {
   final List<double> prices;
