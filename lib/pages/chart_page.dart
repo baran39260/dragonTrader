@@ -17,6 +17,11 @@ class _ChartPageState extends State<ChartPage> {
   bool _isLoading = true;
   String _errorMessage = '';
   String _selectedTimeFrame = '30'; // Default to 30 days
+  String _currency = 'BTC/USD';
+  String _source = 'CoinGecko';
+  String _timeFrame = '1D';
+  double _highPrice = 0.0;
+  double _lowPrice = 0.0;
   double _scaleY = 1.0;
   double _scaleX = 1.0;
   double _offsetX = 0.0;
@@ -40,9 +45,10 @@ class _ChartPageState extends State<ChartPage> {
     try {
       BitcoinDataFetcher fetcher = BitcoinDataFetcher();
       var prices = await fetcher.fetchData(days);
-      print(prices); // Log prices for debugging
       setState(() {
         _prices = prices;
+        _highPrice = prices.reduce((a, b) => a > b ? a : b);
+        _lowPrice = prices.reduce((a, b) => a < b ? a : b);
         _isLoading = false;
       });
     } catch (e) {
@@ -56,8 +62,28 @@ class _ChartPageState extends State<ChartPage> {
   void _onTimeFrameSelected(String days) {
     setState(() {
       _selectedTimeFrame = days;
+      _timeFrame = _convertDaysToTimeFrame(days);
     });
     _fetchData(days);
+  }
+
+  String _convertDaysToTimeFrame(String days) {
+    switch (days) {
+      case '1':
+        return '1D';
+      case '7':
+        return '1W';
+      case '30':
+        return '1M';
+      case '90':
+        return '3M';
+      case '180':
+        return '6M';
+      case '365':
+        return '1Y';
+      default:
+        return '1D';
+    }
   }
 
   void _onScaleStart(ScaleStartDetails details) {
@@ -113,85 +139,85 @@ class _ChartPageState extends State<ChartPage> {
             onTimeFrameSelected: _onTimeFrameSelected,
             selectedTimeFrame: _selectedTimeFrame,
           ),
-          // Main Content
           Expanded(
-            child: Row(
-              children: [
-                LeftToolbar(),
-                // Main Chart Area
-                Expanded(
-                  child: Stack(
-                    children: [
-                      _isLoading
-                          ? Center(child: CircularProgressIndicator())
-                          : _errorMessage.isNotEmpty
-                          ? Center(child: Text(_errorMessage))
-                          : ChartArea(
-                        prices: _prices,
-                        scaleY: _scaleY,
-                        scaleX: _scaleX,
-                        offsetX: _offsetX,
-                        offsetY: _offsetY,
-                        onScaleStart: _onScaleStart,
-                        onScaleUpdate: _onScaleUpdate,
-                        onPointerSignal: _onChartPointerSignal, // اضافه کردن مدیریت رویداد سیگنال موس
-                      ),
-                      // Floating Currency Info Bar
-                      if (!_isLoading && _errorMessage.isEmpty)
-                        Positioned(
-                          top: 10,
-                          left: 10,
-                          right: 10,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'BTC/USD',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'CoinGecko',
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    '1D',
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Text(
-                                    'H: ${_prices.isNotEmpty ? _prices.reduce((a, b) => a > b ? a : b).toStringAsFixed(2) : 'N/A'}',
-                                    style: TextStyle(color: Colors.green),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'L: ${_prices.isNotEmpty ? _prices.reduce((a, b) => a < b ? a : b).toStringAsFixed(2) : 'N/A'}',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+            child: ClipRect(
+              child: Row(
+                children: [
+                  LeftToolbar(),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        _isLoading
+                            ? Center(child: CircularProgressIndicator())
+                            : _errorMessage.isNotEmpty
+                            ? Center(child: Text(_errorMessage))
+                            : ChartArea(
+                          prices: _prices,
+                          scaleY: _scaleY,
+                          scaleX: _scaleX,
+                          offsetX: _offsetX,
+                          offsetY: _offsetY,
+                          onScaleStart: _onScaleStart,
+                          onScaleUpdate: _onScaleUpdate,
+                          onPointerSignal: _onChartPointerSignal,
                         ),
-                    ],
+                        // Floating Currency Info Bar
+                        if (!_isLoading && _errorMessage.isEmpty)
+                          Positioned(
+                            top: 10,
+                            left: 10,
+                            right: 10,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      _currency,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      _source,
+                                      style: TextStyle(color: Colors.grey[600]),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      _timeFrame,
+                                      style: TextStyle(color: Colors.grey[600]),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'H: ${_highPrice.toStringAsFixed(2)}',
+                                      style: TextStyle(color: Colors.green),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'L: ${_lowPrice.toStringAsFixed(2)}',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                RightAxisBar(
-                  prices: _prices,
-                  scaleY: _scaleY,
-                  offsetY: _offsetY,
-                  onVerticalScale: _onVerticalScale,
-                ),
-              ],
+                  RightAxisBar(
+                    prices: _prices,
+                    scaleY: _scaleY,
+                    offsetY: _offsetY,
+                    onVerticalScale: _onVerticalScale,
+                  ),
+                ],
+              ),
             ),
           ),
           BottomAxisBar(
